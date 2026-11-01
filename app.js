@@ -7,6 +7,7 @@ const authorInput = document.getElementById("author");
 const yearInput = document.getElementById("year");
 const genreInput = document.getElementById("genre");
 const ratingInput = document.getElementById("rating");
+const message = document.getElementById("message");
  
 async function loadBooks() {
     const response = await fetch(API_URL);
@@ -48,9 +49,32 @@ async function addBook(book) {
  
     await loadBooks();
 }
+
+function validate() {
+    if (titleInput.value.trim() === "" || authorInput.value.trim() === "") {
+        return "제목과 저자는 공백 없이 입력해야 합니다.";
+    }
  
+    const year = Number(yearInput.value);
+    if (year < 1900 || year > 2026) {
+        return "출판연도는 1900~2026 사이여야 합니다.";
+    }
+ 
+    const rating = Number(ratingInput.value);
+    if (rating < 1 || rating > 5) {
+        return "평점은 1~5 사이여야 합니다.";
+    }
+ 
+    return "";
+}
+
 form.addEventListener("submit", async (event) => {
     event.preventDefault();
+    const errorText = validate();
+    if (errorText !== "") {
+        message.textContent = errorText;
+        return;
+    }
  
     const book = {
         title: titleInput.value.trim(),
@@ -62,9 +86,10 @@ form.addEventListener("submit", async (event) => {
  
     try {
         await addBook(book);
+        message.textContent = "";
         form.reset();
     } catch (error) {
-        console.error(error);
+        message.textContent = `요청 실패: ${error.message}`;
     }
 });
  
