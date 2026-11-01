@@ -9,6 +9,7 @@ const yearInput = document.getElementById("year");
 const genreInput = document.getElementById("genre");
 const ratingInput = document.getElementById("rating");
 const submitBtn = document.getElementById("submitBtn");
+const searchInput = document.getElementById("search");
 const message = document.getElementById("message");
  
 async function loadBooks() {
@@ -163,5 +164,11 @@ form.addEventListener("submit", async (event) => {
         message.textContent = `요청 실패: ${error.message}`;
     }
 });
- 
+
+searchInput.addEventListener("input", () => {
+    const keyword = searchInput.value.trim();
+    const result = books.filter(book => book.title.includes(keyword));
+    renderBooks(result);
+});
+
 loadBooks();
