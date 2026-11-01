@@ -151,6 +151,7 @@ form.addEventListener("submit", async (event) => {
         genre: genreInput.value,
         rating: Number(ratingInput.value)
     };
+    submitBtn.disabled = true;
  
     try {
         if (editingId) {
@@ -163,6 +164,9 @@ form.addEventListener("submit", async (event) => {
     } catch (error) {
         message.textContent = `요청 실패: ${error.message}`;
     }
+    finally {
+        submitBtn.disabled = false;
+    }
 });
 
 searchInput.addEventListener("input", () => {
@@ -171,4 +175,11 @@ searchInput.addEventListener("input", () => {
     renderBooks(result);
 });
 
-loadBooks();
+async function init() {
+    try {
+        await loadBooks();
+    } catch (error) {
+        message.textContent = `목록을 불러오지 못했습니다: ${error.message}`;
+    }
+}
+init();
