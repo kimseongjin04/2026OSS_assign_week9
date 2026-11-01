@@ -1,12 +1,14 @@
 const API_URL = "https://6ae2c687bbb54129229a62b1.mockapi.io/books";
  
 let books = [];
+let editingId = null;
 const form = document.getElementById("bookForm");
 const titleInput = document.getElementById("title");
 const authorInput = document.getElementById("author");
 const yearInput = document.getElementById("year");
 const genreInput = document.getElementById("genre");
 const ratingInput = document.getElementById("rating");
+const submitBtn = document.getElementById("submitBtn");
 const message = document.getElementById("message");
  
 async function loadBooks() {
@@ -30,11 +32,16 @@ function renderBooks(list) {
         const info = document.createElement("span");
         info.textContent = `${book.title} / ${book.author} (${book.year}) - ${book.genre}, 평점 ${book.rating}`;
 
+        const editBtn = document.createElement("button");
+        editBtn.textContent = "수정";
+        editBtn.addEventListener("click", () => startEdit(book.id));
+
         const deleteBtn = document.createElement("button");
         deleteBtn.textContent = "삭제";
         deleteBtn.addEventListener("click", () => handleDelete(book.id));
 
         li.appendChild(info);
+        li.appendChild(editBtn);
         li.appendChild(deleteBtn);
         bookList.appendChild(li);
     });
@@ -52,6 +59,20 @@ async function addBook(book) {
         throw new Error(`HTTP ${response.status}`);
     }
  
+    await loadBooks();
+}
+
+async function updateBook(id, updatedData) {
+    const response = await fetch(`${API_URL}/${id}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(updatedData)
+    });
+    if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+    }
     await loadBooks();
 }
  
@@ -85,6 +106,22 @@ function validate() {
     return "";
 }
 
+function startEdit(id) {
+    const book = books.find(b => b.id === id);
+    titleInput.value = book.title;
+    authorInput.value = book.author;
+    yearInput.value = book.year;
+    genreInput.value = book.genre;
+    ratingInput.value = book.rating;
+    editingId = id;
+    submitBtn.textContent = "수정 완료";
+}
+function resetForm() {
+    form.reset();
+    editingId = null;
+    submitBtn.textContent = "추가";
+}
+
 async function handleDelete(id) {
     if (!confirm("정말 삭제할까요?")) {
         return;
@@ -115,9 +152,13 @@ form.addEventListener("submit", async (event) => {
     };
  
     try {
-        await addBook(book);
+        if (editingId) {
+            await updateBook(editingId, book);
+        } else {
+            await addBook(book);
+        }
         message.textContent = "";
-        form.reset();
+        resetForm();
     } catch (error) {
         message.textContent = `요청 실패: ${error.message}`;
     }
