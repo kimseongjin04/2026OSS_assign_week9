@@ -29,8 +29,13 @@ function renderBooks(list) {
  
         const info = document.createElement("span");
         info.textContent = `${book.title} / ${book.author} (${book.year}) - ${book.genre}, 평점 ${book.rating}`;
- 
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "삭제";
+        deleteBtn.addEventListener("click", () => handleDelete(book.id));
+
         li.appendChild(info);
+        li.appendChild(deleteBtn);
         bookList.appendChild(li);
     });
 }
@@ -41,6 +46,18 @@ async function addBook(book) {
             "Content-Type": "application/json"
         },
         body: JSON.stringify(book)
+    });
+
+    if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+    }
+ 
+    await loadBooks();
+}
+ 
+async function deleteBook(id) {
+    const response = await fetch(`${API_URL}/${id}`, {
+        method: "DELETE"
     });
  
     if (!response.ok) {
@@ -66,6 +83,19 @@ function validate() {
     }
  
     return "";
+}
+
+async function handleDelete(id) {
+    if (!confirm("정말 삭제할까요?")) {
+        return;
+    }
+ 
+    try {
+        await deleteBook(id);
+        message.textContent = "";
+    } catch (error) {
+        message.textContent = `삭제 실패: ${error.message}`;
+    }
 }
 
 form.addEventListener("submit", async (event) => {
